@@ -1,4 +1,5 @@
-# Example of getting network-devices via REST API calls from Python
+# Simple Example of calling REST API from Python
+# This is all that is required to call a REST API from python
 
 # * THIS SAMPLE APPLICATION AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY
 # * OF ANY KIND BY CISCO, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED
@@ -26,56 +27,56 @@ import requests
 #import json library
 import json
 
-#controller='sandboxapic.cisco.com'
-controller='devnetapi.cisco.com/sandbox/apic_em'
-
-def getTicket():
-	# put the ip address or dns of your apic-em controller in this url
-	url = "https://" + controller + "/api/v1/ticket"
-
-	#the username and password to access the APIC-EM Controller
-	payload = {"username":"devnetuser","password":"Cisco123!"}
-
-	#Content type must be included in the header
-	header = {"content-type": "application/json"}
-
-	#Performs a POST on the specified url to get the service ticket
-	response= requests.post(url,data=json.dumps(payload), headers=header, verify=False)
-
-	print (response)
-	
-	#convert response to json format
-	r_json=response.json()
-
-	#parse the json to get the service ticket
-	ticket = r_json["response"]["serviceTicket"]
-
-	return ticket
+controller='sandboxapic.cisco.com'
+#controller='devnetapi.cisco.com/sandbox/apic_em'
 
 
-def getNetworkDevices(ticket):
-	# URL for network-device REST API call to get list of exisiting devices on the network.
-	url = "https://" + controller + "/api/v1/network-device"
+# put the ip address or dns of your apic-em controller in this url
+url = "https://" + controller + "/api/v1/ticket"
 
-	#Content type as well as the ticket must be included in the header 
-	header = {"content-type": "application/json", "X-Auth-Token":ticket}
+#the username and password to access the APIC-EM Controller
+payload = {"username":"devnetuser","password":"Cisco123!"}
 
-	# this statement performs a GET on the specified network device url
-	response = requests.get(url, headers=header, verify=False)
+#Content type must be included in the header
+header = {"content-type": "application/json"}
 
-	# json.dumps serializes the json into a string and allows us to
-	# print the response in a 'pretty' format with indentation etc.
-	print ("Network Devices = ")
-	print (json.dumps(response.json(), indent=4, separators=(',', ': ')))
-	
-	#convert data to json format.
-	r_json=response.json()
-	
-	#Iterate through network device data and print the id and series name of each device
-	for i in r_json["response"]:
-		print(i["id"] + "   " + '{:53}'.format(i["series"]) + "  " + i["reachabilityStatus"])
-		
+#Performs a POST on the specified url to get the service ticket
+response= requests.post(url,data=json.dumps(payload), headers=header, verify=False)
 
+#convert response to json format
+r_json=response.json()
 
-theTicket=getTicket()
-getNetworkDevices(theTicket)
+print(r_json)
+#parse the json to get the service ticket
+ticket = r_json["response"]["serviceTicket"]
+
+# URL for Host REST API call to get list of exisitng hosts on the network.
+url = "https://" + controller + "/api/v1/host"
+url2= "https://" + controller + "/api/v1/host/count"
+
+#Content type must be included in the header as well as the ticket
+header = {"content-type": "application/json", "X-Auth-Token":ticket}
+
+# this statement performs a GET on the specified host url
+response = requests.get(url, headers=header, verify=False)
+response2= requests.get(url=url2,headers=header,verify=False)
+# json.dumps serializes the json into a string and allows us to
+# print the response in a 'pretty' format with indentation etc.
+#print ("Hosts = ")
+print("Version and Count = ", response2.json())
+
+v=response.json()
+
+#print(r_resp["response"][0]["hostIp"])
+
+#=response.json()
+#k=json.dumps(response.json(), indent=4, separators=(',', ': '))
+for i in v:
+    if i=="response":
+            print("Host Ip =",v[i][0]['hostIp'])
+            print("Host Mac=",v[i][0]['hostMac'])
+            print("Host Ip =",v[i][1]['hostIp'])
+            print("Host Mac=",v[i][1]['hostMac'])
+            print("Host Ip =",v[i][2]['hostIp'])
+            print("Host Mac=",v[i][2]['hostMac'])
+
